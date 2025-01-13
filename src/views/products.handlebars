@@ -1,0 +1,12 @@
+<h1>Real Time Products</h1>
+
+<div id="container-products">
+    {{#each list}}
+        <div class="product-card">
+            <img src="{{this.thumbnail}}" alt="{{this.title}}">
+            <h3>{{this.title}}</h3>
+            <p>{{this.description}}</p>
+            <span>${{this.price}}</span>
+        </div>
+    {{/each}}
+</div>
