@@ -1,0 +1,48 @@
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real Time Products</title>
+
+  <!-- Estilos para los botones -->
+  <style>
+    /* Estilos para el botón de ordenar */
+    button {
+      background-color: #4CAF50; /* Verde */
+      color: white; /* Texto blanco */
+      border: none; /* Sin borde */
+      padding: 10px 20px; /* Espaciado interno */
+      text-align: center; /* Alineación del texto */
+      text-decoration: none; /* Sin subrayado */
+      display: inline-block; /* Muestra los botones en línea */
+      font-size: 16px; /* Tamaño de la fuente */
+      margin: 10px 5px; /* Espaciado alrededor de los botones */
+      cursor: pointer; /* Cambia el cursor al pasar el mouse */
+      border-radius: 5px; /* Bordes redondeados */
+      transition: background-color 0.3s ease; /* Transición suave */
+    }
+
+    /* Efecto hover para los botones */
+    button:hover {
+      background-color: #45a049; /* Color más oscuro cuando el mouse pasa por encima */
+    }
+
+    /* Estilo específico para el botón de ordenar ascendente */
+    #sortAscBtn {
+      background-color: #007BFF; /* Azul para el botón ascendente */
+    }
+
+    #sortAscBtn:hover {
+      background-color: #0056b3; /* Azul más oscuro al pasar el mouse */
+    }
+
+    /* Estilo específico para el botón de ordenar descendente */
+    #sortDescBtn {
+      background-color: #dc3545; /* Rojo para el botón descendente */
+    }
+
+    #sortDescBtn:hover {
+      background-color: #c82333; /* Rojo más oscuro al pasar el mouse */
+    }
+  </style>
+</head>
+

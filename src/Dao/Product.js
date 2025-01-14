@@ -67,3 +67,53 @@ export class ProductManager {
         await fs.promises.writeFile(this.path, JSON.stringify({ data: this.products }))
     }
 }
+
+
+
+class ProductDAO {
+  constructor(path) {
+    this.productManager = new ProductManager(path);
+  }
+
+  async addProduct(productData) {
+    try {
+      await this.productManager.addProduct(productData);
+    } catch (error) {
+      throw new Error('Error al guardar el producto: ' + error.message);
+    }
+  }
+
+  async getProducts() {
+    try {
+      return await this.productManager.getProducts();
+    } catch (error) {
+      throw new Error('Error al obtener los productos: ' + error.message);
+    }
+  }
+
+  async getProductById(id) {
+    try {
+      return await this.productManager.getProductById(id);
+    } catch (error) {
+      throw new Error('Error al obtener el producto: ' + error.message);
+    }
+  }
+
+  async updateProduct(id, payload) {
+    try {
+      await this.productManager.updateProduct(id, payload);
+    } catch (error) {
+      throw new Error('Error al actualizar el producto: ' + error.message);
+    }
+  }
+
+  async deleteProduct(id) {
+    try {
+      await this.productManager.deleteProduct(id);
+    } catch (error) {
+      throw new Error('Error al eliminar el producto: ' + error.message);
+    }
+  }
+}
+
+export default ProductDAO;

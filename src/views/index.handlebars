@@ -1,12 +1,10 @@
 <div class="container m-auto grid grid-cols-3 gap-4 m-4 p-4 w-1/2">
     {{#each list}}
-        <div class="tile max-w-sm rounded overflow-hidden shadow-lg">
-            <img class="w-full" src="https://v1.tailwindcss.com/img/card-top.jpg" alt="Sunset in the mountains">
+        <div class="tile max-w-sm rounded overflow-hidden shadow-lg" id="product-{{@index}}">
+            <img class="w-full" src="https://v1.tailwindcss.com/img/card-top.jpg" alt="{{title}}">
             <div class="px-6 py-4">
                 <div class="font-bold text-xl mb-2">{{title}}</div>
-                <p class="text-gray-700 text-base">
-                    {{description}}
-                </p>
+                <p class="text-gray-700 text-base">{{description}}</p>
             </div>
             <div class="px-6 pt-4 pb-2">
                 <span class="inline-block bg-gray-100 rounded-full px-3 py-2 text-xl font-semibold text-gray-800 mr-2 mb-2">
@@ -16,3 +14,141 @@
         </div>  
     {{/each}}
 </div>
+
+<!-- Formulario para agregar un producto -->
+<form id="addProductForm" method="POST" action="/api/product/add" enctype="multipart/form-data">
+  <h3>Agregar Producto</h3>
+  <input type="text" name="name" placeholder="Nombre del producto" required />
+  <input type="text" name="description" placeholder="Descripción" required />
+  <input type="number" name="price" placeholder="Precio" required />
+  <input type="text" name="category" placeholder="Categoría" />
+  <button type="submit">Agregar</button>
+</form>
+
+<!-- Botones para ordenar productos por precio -->
+<button id="sortByPriceAscBtn">Ordenar por Precio Ascendente</button>
+<button id="sortByPriceDescBtn">Ordenar por Precio Descendente</button>
+
+<script>
+  // Manejo del formulario para agregar productos
+  document.getElementById('addProductForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevenir el envío estándar del formulario
+
+    const formData = new FormData(this); // Recoger los datos del formulario
+
+    fetch('/api/product/add', {
+      method: 'POST',
+      body: formData // Enviar los datos del formulario, incluyendo el archivo
+    })
+    .then(response => response.json()) // Convertir la respuesta a JSON
+    .then(data => {
+      if (data.status === 'success') {
+        alert('Producto agregado exitosamente');
+        document.getElementById('addProductForm').reset(); // Limpiar el formulario
+        location.reload();  // Recargar la página para mostrar el producto recién agregado
+      } else {
+        alert('Hubo un error al agregar el producto');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Error en el servidor');
+    });
+  });
+
+  // Manejo del botón para ordenar productos por precio ascendente
+  const sortByPriceAscBtn = document.getElementById('sortByPriceAscBtn');
+  sortByPriceAscBtn.addEventListener('click', () => {
+    fetch('/api/product/?sort=asc')  // Orden ascendente
+      .then(response => response.json())
+      .then(data => {
+        // Limpiar las tarjetas de productos actuales sin afectar el diseño
+        const productContainer = document.querySelector('.container');
+        const products = data.payload;
+
+        // Iterar a través de los productos ordenados y actualizar las tarjetas
+        products.forEach((product, index) => {
+          const productCard = document.getElementById(`product-${index}`);
+          
+          // Actualizar el contenido de la tarjeta
+          productCard.querySelector('img').src = "https://v1.tailwindcss.com/img/card-top.jpg"; // Asegúrate de que la URL de la imagen esté correcta
+          productCard.querySelector('.font-bold').textContent = product.title;
+          productCard.querySelector('.text-gray-700').textContent = product.description;
+          productCard.querySelector('span').textContent = `$${product.price}`;
+        });
+      })
+      .catch(error => console.error('Error al obtener productos ordenados:', error));
+  });
+
+  // Manejo del botón para ordenar productos por precio descendente
+  const sortByPriceDescBtn = document.getElementById('sortByPriceDescBtn');
+  sortByPriceDescBtn.addEventListener('click', () => {
+    fetch('/api/product/?sort=desc')  // Orden descendente
+      .then(response => response.json())
+      .then(data => {
+        // Limpiar las tarjetas de productos actuales sin afectar el diseño
+        const productContainer = document.querySelector('.container');
+        const products = data.payload;
+
+        // Iterar a través de los productos ordenados y actualizar las tarjetas
+        products.forEach((product, index) => {
+          const productCard = document.getElementById(`product-${index}`);
+          
+          // Actualizar el contenido de la tarjeta
+          productCard.querySelector('img').src = "https://v1.tailwindcss.com/img/card-top.jpg"; // Asegúrate de que la URL de la imagen esté correcta
+          productCard.querySelector('.font-bold').textContent = product.title;
+          productCard.querySelector('.text-gray-700').textContent = product.description;
+          productCard.querySelector('span').textContent = `$${product.price}`;
+        });
+      })
+      .catch(error => console.error('Error al obtener productos ordenados:', error));
+  });
+</script>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real Time Products</title>
+
+  <!-- Estilos para los botones -->
+  <style>
+    /* Estilos para el botón de ordenar */
+    button {
+      background-color: #4CAF50; /* Verde */
+      color: white; /* Texto blanco */
+      border: none; /* Sin borde */
+      padding: 10px 20px; /* Espaciado interno */
+      text-align: center; /* Alineación del texto */
+      text-decoration: none; /* Sin subrayado */
+      display: inline-block; /* Muestra los botones en línea */
+      font-size: 16px; /* Tamaño de la fuente */
+      margin: 10px 5px; /* Espaciado alrededor de los botones */
+      cursor: pointer; /* Cambia el cursor al pasar el mouse */
+      border-radius: 5px; /* Bordes redondeados */
+      transition: background-color 0.3s ease; /* Transición suave */
+    }
+
+    /* Efecto hover para los botones */
+    button:hover {
+      background-color: #45a049; /* Color más oscuro cuando el mouse pasa por encima */
+    }
+
+    /* Estilo específico para el botón de ordenar ascendente */
+    #sortAscBtn {
+      background-color: #007BFF; /* Azul para el botón ascendente */
+    }
+
+    #sortAscBtn:hover {
+      background-color: #0056b3; /* Azul más oscuro al pasar el mouse */
+    }
+
+    /* Estilo específico para el botón de ordenar descendente */
+    #sortDescBtn {
+      background-color: #dc3545; /* Rojo para el botón descendente */
+    }
+
+    #sortDescBtn:hover {
+      background-color: #c82333; /* Rojo más oscuro al pasar el mouse */
+    }
+  </style>
+</head>
+

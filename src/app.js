@@ -42,6 +42,16 @@ socketServer.on('connection', socket => {
     })
 });
 
+
+
+socketServer.on('newProduct', (product) => {
+  const productList = document.getElementById('productList');
+  const newItem = document.createElement('li');
+  newItem.textContent = `${product.name} - ${product.description} - $${product.price}`;
+  productList.appendChild(newItem);
+});
+
+
 mongoose.connect('mongodb+srv://Sebaldini:jT1Gmq15rRMF5r3E@coderback.k7g2i.mongodb.net/?retryWrites=true&w=majority&appName=CoderBack', { dbName: 'ecommerce' }).then(()=>{
     console.log('connect to database')
 })

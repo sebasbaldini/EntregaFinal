@@ -1,75 +1,120 @@
 import { Router } from "express";
 import { __dirname, uploader } from "../utils.js";
-import { socketServer } from "../app.js";
 import { productModel } from "../Dao/models/Product.model.js";
 
 const router = Router();
 
-router.post("/", uploader.single("file"), async (req, res) => {
-  if (!req.file) res.status(402).json({ message: "Error en algun campo" });
+// Crear un nuevo producto
+router.post('/add', async (req, res) => {
+  try {
+      console.log('Datos recibidos:', req.body); // Esto debería mostrar los datos enviados
 
-  const prod = req.body;
-  const result = await productModel.create({
-    ...prod,
-    thumbnail: req.file.path.split('public')[1],
-  });
+      const { name, description, price, category } = req.body;
 
-  res.status(201).json({ payload: result });
-});
+      if (!name || !description || !price) {
+          return res.status(400).send('Faltan campos obligatorios');
+      }
 
-router.get("/", async (req, res) => {
-  const { limit = 10, page = 1, sort = '', ...query } = req.query;
-  const sortManager = {
-    'asc': 1,
-    'desc': -1
+      await ProductDAO.addProduct({ name, description, price, category });
+
+      res.status(201).send('Producto agregado exitosamente');
+  } catch (error) {
+      console.error('Error al agregar producto:', error);
+      res.status(500).send('Error interno del servidor');
   }
-
-  const products = await productModel.paginate(
-    { ...query }, // le paso el resto de las consultas o filtros (nombre='',precio='',categoria=')
-    { 
-      limit,
-      page,
-      ...(sort && { sort: { price: sortManager[sort]} }),
-      customLabels: { docs: 'payload' }
-    })
-
-  res.json({
-    ...products,
-    status: 'success'
-  });
 });
 
+
+
+// Obtener productos con paginación y filtros
+router.get("/", async (req, res) => {
+  try {
+    const { limit = 10, page = 1, sort = "asc", ...query } = req.query;
+
+    // Validar y normalizar los parámetros
+    const limitNum = parseInt(limit, 10);
+    const pageNum = parseInt(page, 10);
+    if (isNaN(limitNum) || isNaN(pageNum) || limitNum <= 0 || pageNum <= 0) {
+      return res.status(400).json({ message: "Parámetros de paginación inválidos" });
+    }
+
+    const sortManager = { asc: 1, desc: -1 };
+    const products = await productModel.paginate(
+      { ...query },
+      {
+        limit: limitNum,
+        page: pageNum,
+        sort: { price: sortManager[sort] || 1 },  // Ordenar por precio
+        customLabels: { docs: "payload" },
+      }
+    );
+
+    res.json({ ...products, status: "success" });
+  } catch (error) {
+    console.error("Error al obtener productos:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
+});
+
+
+// Obtener producto por ID
 router.get("/:id", async (req, res) => {
-  const { id } = req.params;
+  try {
+    const { id } = req.params;
+    const productFinded = await productModel.findById(id);
 
-  const productFinded = await productModel.findById(id);
+    if (!productFinded) {
+      return res.status(404).json({ message: "Producto no encontrado" });
+    }
 
-  const status = productFinded ? 200 : 404;
-
-  res.status(status).json({ payload: productFinded });
+    res.status(200).json({ payload: productFinded });
+  } catch (error) {
+    console.error("Error al buscar producto:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
 });
 
+// Actualizar producto por ID
 router.put("/:id", uploader.single("file"), async (req, res) => {
-  if (!req.file) res.status(400).json({ message: "Error en algun campo" });
+  try {
+    if (!req.file) return res.status(400).json({ message: "Error: archivo faltante" });
 
-  const { body, params } = req;
-  const { id } = params;
-  const product = body;
-  const productUpdated = await productModel.findByIdAndUpdate(id, {
-    ...product,
-    thumbnail: req.file.path,
-  }, { new: true });
-  // socketServer.sockets.emit("onchangeProduct", await productList.getProducts());
-  res
-    .status(201)
-    .json({ message: "Updated successfully", payload: productUpdated });
+    const { id } = req.params;
+    const productUpdated = await productModel.findByIdAndUpdate(
+      id,
+      {
+        ...req.body,
+        thumbnail: req.file.path.split("public")[1],
+      },
+      { new: true }
+    );
+
+    if (!productUpdated) {
+      return res.status(404).json({ message: "Producto no encontrado" });
+    }
+
+    res.status(200).json({ message: "Producto actualizado correctamente", payload: productUpdated });
+  } catch (error) {
+    console.error("Error al actualizar producto:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
 });
 
+// Eliminar producto por ID
 router.delete("/:id", async (req, res) => {
-  const { id } = req.params;
-   const isDelete = await productModel.findByIdAndDelete(id);
-  //   socketServer.sockets.emit("onchangeProduct", await productList.getProducts());
-  res.status(isDelete ? 200 : 400).json({ payload: isDelete});
+  try {
+    const { id } = req.params;
+    const isDeleted = await productModel.findByIdAndDelete(id);
+
+    if (!isDeleted) {
+      return res.status(404).json({ message: "Producto no encontrado" });
+    }
+
+    res.status(200).json({ message: "Producto eliminado correctamente", payload: isDeleted });
+  } catch (error) {
+    console.error("Error al eliminar producto:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
 });
 
 export default router;
